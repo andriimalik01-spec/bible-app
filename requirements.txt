@@ -1,2 +1,2 @@
-airogram==3.4.1
-python-dotenv
+airogram==3.25.0
+python-dotenv==1.2.2
