@@ -1,2 +1,7 @@
-TOKEN = "8543394906:AAFZvZNkx3zQIaTBcfyZcOH2UwmmZpF0ahA"
-ADMIN_ID = 12345678
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_ID = int(os.getenv("ADMIN_ID"))

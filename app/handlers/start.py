@@ -1,12 +1,9 @@
 from aiogram import Router
+from aiogram.filters import Command
 from aiogram.types import Message
-from aiogram.filters import CommandStart
-from app.services.user_service import UserService
 
 router = Router()
 
-@router.message(CommandStart())
+@router.message(Command("start"))
 async def start_handler(message: Message):
-    await message.answer(
-        "🙏 Вітаю!\nЦе  Bible Bot"
-    )
+    await message.answer("Бот запущено.")
