@@ -1,12 +1,13 @@
 import asyncio
 from aiogram import Bot, Dispatcher
 from app.config import TOKEN
-from app.services.database import init_db
+from app.database.connection import init_db
+
 
 from app.handlers import start, reading
 
 async def main():
-    init_db()
+    await init_db()
 
     bot = Bot(token=TOKEN)
     dp = Dispatcher()
