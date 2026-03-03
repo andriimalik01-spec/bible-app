@@ -8,28 +8,31 @@ pool = None
 
 
 async def init_db():
-    pool = await asyncpg.create_pool(DATABASE_URL)
+    global pool
+    
+    if pool is None:
+        pool = await asyncpg.create_pool(DATABASE_URL)
 
-    async with pool.acquire() as conn:
+        async with pool.acquire() as conn:
+        # ---------------- USERS ----------------
+            await conn.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                telegram_id BIGINT UNIQUE NOT NULL,
+                username TEXT,
+                first_name TEXT,
+                language TEXT DEFAULT 'ua',
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+            """)
 
-        await conn.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            telegram_id BIGINT UNIQUE NOT NULL,
-            username TEXT,
-            first_name TEXT,
-            language TEXT DEFAULT 'ua',
-            created_at TIMESTAMP DEFAULT NOW()
-        )
-        """)
-
-        await conn.execute("""
-        ALTER TABLE users
-        ADD COLUMN IF NOT EXISTS language TEXT DEFAULT 'ua'
-        """)
+            await conn.execute("""
+            ALTER TABLE users
+            ADD COLUMN IF NOT EXISTS language TEXT DEFAULT 'ua'
+            """)
 
         # ---------------- READING PLANS ----------------
-        await conn.execute("""
+            await conn.execute("""
             CREATE TABLE IF NOT EXISTS reading_plans (
                 id SERIAL PRIMARY KEY,
                 name TEXT NOT NULL,
@@ -37,20 +40,20 @@ async def init_db():
                 duration_days INTEGER NOT NULL,
                 created_at TIMESTAMP DEFAULT NOW()
             );
-        """)
+            """)
 
         # ---------------- READING PLAN DAYS ----------------
-        await conn.execute("""
+            await conn.execute("""
             CREATE TABLE IF NOT EXISTS reading_plan_days (
                 id SERIAL PRIMARY KEY,
                 plan_id INTEGER REFERENCES reading_plans(id) ON DELETE CASCADE,
                 day_number INTEGER NOT NULL,
                 content TEXT NOT NULL
             );
-        """)
+            """)
 
         # ---------------- USER PROGRESS ----------------
-        await conn.execute("""
+            await conn.execute("""
             CREATE TABLE IF NOT EXISTS reading_progress (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -60,7 +63,7 @@ async def init_db():
                 updated_at TIMESTAMP DEFAULT NOW(),
                 UNIQUE(user_id)
             );
-        """)
+            """)
 
 
 async def get_pool():
