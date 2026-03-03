@@ -6,7 +6,7 @@ async def create_user_if_not_exists(
     username: str | None,
     first_name: str | None
 ):
-    pool = get_pool()
+    pool = await get_pool()
 
     async with pool.acquire() as conn:
 
