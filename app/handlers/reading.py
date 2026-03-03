@@ -5,12 +5,29 @@ from aiogram.types import (
     InlineKeyboardButton,
     CallbackQuery
 )
-
+from app.services.reading import get_today_reading
+from app.services.i18n import t
+from aiogram import Router
+from aiogram.types import Message
 from app.services.plans import get_all_plans
 from app.services.progress import start_plan_for_user
 
 router = Router()
 
+@router.message(lambda message: message.text in ["📖 Сьогоднішнє читання", "📖 Сегодняшнее чтение"])
+async def today_reading_handler(message: Message):
+    data = await get_today_reading(message.from_user.id)
+
+    if not data:
+        await message.answer("Спочатку оберіть план.")
+        return
+
+    current_day = data["current_day"]
+    content = data["content"]
+
+    await message.answer(
+        f"📖 День {current_day}\n\n{content}"
+    )
 
 # 📚 Кнопка "Обрати план"
 @router.message(F.text == "📚 Обрати план")
