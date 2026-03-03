@@ -32,3 +32,7 @@ async def init_db():
                 created_at TIMESTAMP DEFAULT NOW()
             );
         """)
+
+
+def get_pool():
+    return pool
