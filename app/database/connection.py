@@ -24,7 +24,7 @@ async def init_db():
                 telegram_id BIGINT UNIQUE NOT NULL,
                 username TEXT,
                 first_name TEXT,
-                language TEXT DEFAULT 'ua'
+                language TEXT DEFAULT 'ua',
                 created_at TIMESTAMP DEFAULT NOW()
             );
         """)
