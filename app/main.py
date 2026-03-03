@@ -2,12 +2,14 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from app.config import TOKEN
 from app.database.connection import init_db
+from app.services.seed import seed_reading_plans
 
 
 from app.handlers import start, reading
 
 async def main():
     await init_db()
+    await seed_reading_plans()
 
     bot = Bot(token=TOKEN)
     dp = Dispatcher()
