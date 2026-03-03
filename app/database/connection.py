@@ -8,25 +8,24 @@ pool = None
 
 
 async def init_db():
-    global pool
-
-    if not DATABASE_URL:
-        raise RuntimeError("DATABASE_URL is not set")
-
     pool = await asyncpg.create_pool(DATABASE_URL)
 
     async with pool.acquire() as conn:
 
-        # ---------------- USERS ----------------
         await conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                telegram_id BIGINT UNIQUE NOT NULL,
-                username TEXT,
-                first_name TEXT,
-                language TEXT DEFAULT 'ua',
-                created_at TIMESTAMP DEFAULT NOW()
-            );
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            telegram_id BIGINT UNIQUE NOT NULL,
+            username TEXT,
+            first_name TEXT,
+            language TEXT DEFAULT 'ua',
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+        """)
+
+        await conn.execute("""
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS language TEXT DEFAULT 'ua'
         """)
 
         # ---------------- READING PLANS ----------------
