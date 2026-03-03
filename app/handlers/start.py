@@ -1,19 +1,14 @@
-from aiogram import Router
-from aiogram.types import Message
-from aiogram.filters import CommandStart
-
-from app.keyboards.main_menu import get_main_menu
-from app.services.users import create_user_if_not_exists
-
-router = Router()
-
+from app.keyboards.menus import main_menu
 
 @router.message(CommandStart())
 async def start_handler(message: Message):
-    await create_user_if_not_exists(message.from_user)
+    await create_user_if_not_exists(
+        message.from_user.id,
+        message.from_user.username,
+        message.from_user.first_name
+    )
 
     await message.answer(
-        "📖 Ласкаво просимо до Біблійного бота!\n\n"
-        "Обери дію з меню нижче 👇",
-        reply_markup=get_main_menu()
+        "Ласкаво просимо 🙏\nОберіть дію:",
+        reply_markup=main_menu()
     )

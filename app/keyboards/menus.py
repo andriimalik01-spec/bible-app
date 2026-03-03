@@ -21,3 +21,15 @@ def reading_menu():
         ],
         resize_keyboard=True
     )
+    
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+
+
+def main_menu():
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="📚 Обрати план")],
+            [KeyboardButton(text="📖 Сьогоднішнє читання")]
+        ],
+        resize_keyboard=True
+    )
