@@ -41,6 +41,28 @@ async def init_db():
                 created_at TIMESTAMP DEFAULT NOW()
             );
             """)
+            
+            # Seed default plan
+            await conn.execute("""
+            INSERT INTO reading_plans (name, description, duration_days)
+            SELECT 
+                '30 днів з Притчами',
+                'Щоденне читання книги Притч протягом 30 днів',
+                30
+            WHERE NOT EXISTS (
+                SELECT 1 FROM reading_plans
+            );
+            """)
+            
+            for day in range(1, 31):
+                await conn.execute("""
+                INSERT INTO reading_plan_days (plan_id, day_number, content)
+                SELECT 1, $1, $2
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM reading_plan_days 
+                    WHERE plan_id = 1 AND day_number = $1
+                );
+                """, day, f"Притчі, глава {day}")
 
         # ---------------- READING PLAN DAYS ----------------
             await conn.execute("""
