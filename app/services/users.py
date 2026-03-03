@@ -1,22 +1,22 @@
 from app.database.connection import get_pool
 
 
-async def create_user_if_not_exists(user):
+async def create_user_if_not_exists(telegram_id: int, username: str | None, first_name: str | None):
     pool = await get_pool()
 
     async with pool.acquire() as conn:
-        existing = await conn.fetchrow(
+        user = await conn.fetchrow(
             "SELECT id FROM users WHERE telegram_id = $1",
-            user.id
+            telegram_id
         )
 
-        if not existing:
+        if not user:
             await conn.execute(
                 """
                 INSERT INTO users (telegram_id, username, first_name)
                 VALUES ($1, $2, $3)
                 """,
-                user.id,
-                user.username,
-                user.first_name
+                telegram_id,
+                username,
+                first_name
             )
