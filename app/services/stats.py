@@ -1,5 +1,5 @@
 from datetime import date
-from .database import get_connection
+from app.database.connection import get_connection
 
 
 def mark_done(user_id: int):
