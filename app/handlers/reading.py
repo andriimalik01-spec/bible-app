@@ -1,35 +1,15 @@
 from aiogram import Router, F
-from aiogram.types import (
-    Message,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
-    CallbackQuery
-)
-from app.services.reading import get_today_reading
-from app.services.i18n import t
-from aiogram import Router
 from aiogram.types import Message
+from aiogram.filters import Command
+
 from app.services.plans import get_all_plans
 from app.services.progress import start_plan_for_user
+from app.services.users import get_user_by_telegram_id
 
 router = Router()
 
-@router.message(lambda message: message.text in ["📖 Сьогоднішнє читання", "📖 Сегодняшнее чтение"])
-async def today_reading_handler(message: Message):
-    data = await get_today_reading(message.from_user.id)
 
-    if not data:
-        await message.answer("Спочатку оберіть план.")
-        return
-
-    current_day = data["current_day"]
-    content = data["content"]
-
-    await message.answer(
-        f"📖 День {current_day}\n\n{content}"
-    )
-
-# 📚 Кнопка "Обрати план"
+# Кнопка "Обрати план"
 @router.message(F.text == "📚 Обрати план")
 async def choose_plan(message: Message):
     plans = await get_all_plans()
@@ -38,49 +18,28 @@ async def choose_plan(message: Message):
         await message.answer("Наразі немає доступних планів.")
         return
 
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text=f"{plan['name']} ({plan['duration_days']} днів)",
-                    callback_data=f"select_plan:{plan['id']}"
-                )
-            ]
-            for plan in plans
-        ]
-    )
+    text = "📚 Оберіть план:\n\n"
 
-    await message.answer(
-        "📚 Оберіть план:",
-        reply_markup=keyboard
-    )
+    for plan in plans:
+        text += f"{plan['id']}. {plan['name']} ({plan['duration_days']} днів)\n"
 
-@router.message(lambda message: message.text == "30 днів з Притчами (30 днів)")
-async def choose_30_days_plan(message: Message):
+    await message.answer(text)
 
-    plan = await get_plan_by_name("30 днів з Притчами (30 днів)")
 
-    if not plan:
-        await message.answer("❌ План не знайдено.")
+# Вибір плану цифрою (1,2,3...)
+@router.message(F.text.regexp(r"^\d+$"))
+async def plan_selected(message: Message):
+    plan_id = int(message.text)
+
+    user = await get_user_by_telegram_id(message.from_user.id)
+
+    if not user:
+        await message.answer("Помилка користувача.")
         return
 
-    await subscribe_user_to_plan(
-        user_id=message.from_user.id,
-        plan_id=plan["id"]
+    await start_plan_for_user(
+        telegram_id=message.from_user.id,
+        plan_id=plan_id
     )
 
-    await message.answer(
-        "✅ Ви обрали план «30 днів з Притчами».\n\n"
-        "📖 Натисніть «Сьогоднішнє читання» щоб почати."
-    )
-
-# ✅ Вибір плану через callback
-@router.callback_query(F.data.startswith("select_plan:"))
-async def plan_selected(callback: CallbackQuery):
-    plan_id = int(callback.data.split(":")[1])
-    telegram_id = callback.from_user.id
-
-    await start_plan_for_user(telegram_id, plan_id)
-
-    await callback.message.answer("✅ План успішно обрано!")
-    await callback.answer()
+    await message.answer("✅ План успішно обрано!\nНатисніть «📖 Сьогоднішнє читання»")
