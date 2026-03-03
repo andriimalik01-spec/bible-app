@@ -1,7 +1,7 @@
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_ID = int(os.getenv("ADMIN_ID"))
+TOKEN = os.getenv("TOKEN")
+if not TOKEN:
+    raise RuntimeError("TOKEN is not set")
+    
+ADMIN_ID = None
