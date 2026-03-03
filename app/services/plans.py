@@ -14,3 +14,12 @@ async def get_all_plans():
         )
 
     return plans
+    
+async def get_plan_by_name(name: str):
+    pool = await get_pool()
+
+    async with pool.acquire() as conn:
+        return await conn.fetchrow(
+            "SELECT * FROM reading_plans WHERE name = $1",
+            name
+        )

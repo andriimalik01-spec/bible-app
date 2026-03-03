@@ -38,6 +38,24 @@ async def choose_plan(message: Message):
         reply_markup=keyboard
     )
 
+@router.message(lambda message: message.text == "30 днів з Притчами (30 днів)")
+async def choose_30_days_plan(message: Message):
+
+    plan = await get_plan_by_name("30 днів з Притчами (30 днів)")
+
+    if not plan:
+        await message.answer("❌ План не знайдено.")
+        return
+
+    await subscribe_user_to_plan(
+        user_id=message.from_user.id,
+        plan_id=plan["id"]
+    )
+
+    await message.answer(
+        "✅ Ви обрали план «30 днів з Притчами».\n\n"
+        "📖 Натисніть «Сьогоднішнє читання» щоб почати."
+    )
 
 # ✅ Вибір плану через callback
 @router.callback_query(F.data.startswith("select_plan:"))
