@@ -2,7 +2,7 @@ import asyncio
 from aiogram import Bot, Dispatcher
 
 from app.config import TOKEN
-from app.database.connection import init_db
+from app.core.database import init_db
 from app.handlers import start, reading
 
 
