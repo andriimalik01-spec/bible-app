@@ -13,7 +13,7 @@ async def init_db():
 
     async with pool.acquire() as conn:
 
-        # Users table
+        # USERS
         await conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -24,13 +24,35 @@ async def init_db():
         );
         """)
 
-        # Reading progress table
+        # READING PLANS
         await conn.execute("""
-        CREATE TABLE IF NOT EXISTS reading_progress (
+        CREATE TABLE IF NOT EXISTS reading_plans (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            description TEXT,
+            duration_days INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+        """)
+
+        # PLAN DAYS
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS reading_plan_days (
+            id SERIAL PRIMARY KEY,
+            plan_id INTEGER REFERENCES reading_plans(id) ON DELETE CASCADE,
+            day_number INTEGER NOT NULL,
+            content TEXT NOT NULL
+        );
+        """)
+
+        # USER PROGRESS
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS user_reading_progress (
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            plan_id INTEGER REFERENCES reading_plans(id),
             current_day INTEGER DEFAULT 1,
-            completed_days INTEGER DEFAULT 0,
+            started_at TIMESTAMP DEFAULT NOW(),
             updated_at TIMESTAMP DEFAULT NOW()
         );
         """)

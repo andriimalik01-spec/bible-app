@@ -13,7 +13,7 @@ async def start_handler(message: Message):
     await create_user_if_not_exists(message.from_user)
 
     await message.answer(
-        "📖 Ласкаво просимо до біблійного бота!\n\n"
+        "📖 Ласкаво просимо до Біблійного бота!\n\n"
         "Обери дію з меню нижче 👇",
         reply_markup=get_main_menu()
     )
