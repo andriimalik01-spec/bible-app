@@ -18,6 +18,8 @@ import app.handlers.settings as settings
 import app.handlers.admin as admin
 from app.core.rate_limit import RateLimitMiddleware
 from app.core.health import start_health_server
+import app.handlers.reading as reading
+
 
 import logging
 
@@ -46,6 +48,7 @@ async def main():
     dp.include_router(admin.router)
     dp.message.middleware(RateLimitMiddleware(0.7))
     dp.callback_query.middleware(RateLimitMiddleware(0.7))
+    dp.include_router(reading.router)
     
     
     
