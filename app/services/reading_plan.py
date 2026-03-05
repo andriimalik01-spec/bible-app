@@ -1,22 +1,55 @@
-from datetime import date
-
-START_DATE = date(2026, 1, 1)
-
-BIBLE_BOOKS = [
-    ("Буття", 50), ("Вихід", 40), ("Левіт", 27),
-    ("Числа", 36), ("Повторення Закону", 34),
-    ("Ісус Навин", 24), ("Судді", 21),
-    ("1 Самуїлова", 31), ("2 Самуїлова", 24),
-    ("Матвія", 28), ("Марка", 16),
-    ("Луки", 24), ("Івана", 21)
-]
-
-CHAPTERS = [(b, c) for b, n in BIBLE_BOOKS for c in range(1, n + 1)]
+from app.core.database import get_pool
+from app.data.bible_structure import NEW_TESTAMENT, OLD_TESTAMENT
 
 
-def get_reading(plan: int):
-    today_index = (date.today() - START_DATE).days * plan
-    return [
-        f"{book} {ch}"
-        for book, ch in CHAPTERS[today_index:today_index + plan]
-    ]
+def flatten_structure(structure):
+    result = []
+    for book, chapters in structure:
+        for ch in range(1, chapters + 1):
+            result.append((book, ch))
+    return result
+
+
+NT_LIST = flatten_structure(NEW_TESTAMENT)
+OT_LIST = flatten_structure(OLD_TESTAMENT)
+
+
+async def create_or_update_plan(user_id: int, nt: int, ot: int):
+    pool = get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("""
+        INSERT INTO reading_plans (user_id, nt_per_day, ot_per_day)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (user_id)
+        DO UPDATE SET nt_per_day = $2, ot_per_day = $3
+        """, user_id, nt, ot)
+
+
+async def get_today_reading(user_id: int):
+    pool = get_pool()
+
+    async with pool.acquire() as conn:
+        plan = await conn.fetchrow("""
+            SELECT * FROM reading_plans WHERE user_id = $1
+        """, user_id)
+
+        if not plan:
+            return None
+
+        nt_index = plan["nt_index"]
+        ot_index = plan["ot_index"]
+
+        nt_per_day = plan["nt_per_day"]
+        ot_per_day = plan["ot_per_day"]
+
+        nt_today = NT_LIST[nt_index: nt_index + nt_per_day]
+        ot_today = OT_LIST[ot_index: ot_index + ot_per_day]
+
+        await conn.execute("""
+            UPDATE reading_plans
+            SET nt_index = nt_index + $1,
+                ot_index = ot_index + $2
+            WHERE user_id = $3
+        """, nt_per_day, ot_per_day, user_id)
+
+        return nt_today + ot_today

@@ -34,11 +34,11 @@ async def init_db():
         await conn.execute("""
         CREATE TABLE IF NOT EXISTS reading_plans (
             id SERIAL PRIMARY KEY,
-            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-            chapters_per_day INTEGER NOT NULL,
-            start_book TEXT,
-            start_chapter INTEGER,
-            current_index INTEGER DEFAULT 0
+            user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+            nt_per_day INTEGER NOT NULL,
+            ot_per_day INTEGER NOT NULL,
+            nt_index INTEGER DEFAULT 0,
+            ot_index INTEGER DEFAULT 0
         );
         """)
 def get_pool():
