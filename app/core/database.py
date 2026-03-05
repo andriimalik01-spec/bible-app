@@ -50,5 +50,19 @@ async def init_db():
             UNIQUE(user_id, date)
         );
         """)
+        
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            telegram_id BIGINT UNIQUE NOT NULL,
+            name TEXT,
+            language TEXT DEFAULT 'ua',
+            current_streak INTEGER DEFAULT 0,
+            max_streak INTEGER DEFAULT 0,
+            total_days INTEGER DEFAULT 0,
+            last_read_date DATE,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+        """)
 def get_pool():
     return pool

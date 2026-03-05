@@ -4,6 +4,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from app.services.streak import mark_as_read, get_streak
 from app.keyboards.reading_keyboard import get_reading_keyboard
+from app.core.database import get_pool
 
 from app.services.users import create_user_if_not_exists
 from app.services.reading_plan import (
@@ -131,8 +132,32 @@ async def mark_read_callback(callback: CallbackQuery):
         name=callback.from_user.full_name
     )
 
-    await mark_as_read(db_user_id)
-    streak = await get_streak(db_user_id)
+    streak = await mark_as_read(db_user_id)
 
     await callback.message.answer(f"🔥 Current streak: {streak} days")
     await callback.answer()
+    
+    
+@router.message(Command("stats"))
+async def stats_handler(message: Message):
+    db_user_id = await create_user_if_not_exists(
+        telegram_id=message.from_user.id,
+        name=message.from_user.full_name
+    )
+
+    pool = get_pool()
+    async with pool.acquire() as conn:
+        user = await conn.fetchrow("""
+            SELECT current_streak, max_streak, total_days
+            FROM users
+            WHERE id = $1
+        """, db_user_id)
+
+    text = (
+        f"📊 Your Statistics:\n\n"
+        f"🔥 Current streak: {user['current_streak']} days\n"
+        f"🏆 Max streak: {user['max_streak']} days\n"
+        f"📖 Total reading days: {user['total_days']}"
+    )
+
+    await message.answer(text)
