@@ -48,7 +48,8 @@ async def start_handler(message: Message):
     for book, ch in reading:
         text += f"{book} {ch}\n"
 
-    await message.answer(text, reply_markup=get_reading_keyboard())
+    from app.keyboards.main_menu import get_main_menu
+    await message.answer(text, reply_markup=get_main_menu())
 
 
 @router.callback_query(lambda c: c.data.startswith("plan_"))
@@ -90,7 +91,8 @@ async def plan_callback(callback: CallbackQuery, state: FSMContext):
         else:
             text += f"{book} {ch}\n"
 
-    await callback.message.answer(text, reply_markup=get_reading_keyboard())
+    from app.keyboards.main_menu import get_main_menu
+    await message.answer(text, reply_markup=get_main_menu())
     await callback.answer()
 
 
@@ -211,3 +213,32 @@ async def rating_handler(message: Message):
 async def snapshot_handler(message: Message):
     await create_month_snapshot()
     await message.answer("Monthly snapshot created.")
+    
+@router.message(lambda m: m.text == "📖 Reading")
+async def menu_reading(message: Message):
+    await start_handler(message)
+
+
+@router.message(lambda m: m.text == "📓 Journal")
+async def menu_journal(message: Message):
+    await message.answer("Use /journal to see entries or /note to add one.")
+
+
+@router.message(lambda m: m.text == "📊 Statistics")
+async def menu_stats(message: Message):
+    await message.answer("Use /stats")
+
+
+@router.message(lambda m: m.text == "🏆 Rating")
+async def menu_rating(message: Message):
+    await message.answer("Use /rating")
+
+
+@router.message(lambda m: m.text == "🏅 Achievements")
+async def menu_achievements(message: Message):
+    await message.answer("Use /achievements")
+
+
+@router.message(lambda m: m.text == "⚙️ Settings")
+async def menu_settings(message: Message):
+    await message.answer("Use /settings")
