@@ -28,11 +28,49 @@ NEW_TESTAMENT = [
     ("Revelation", 22),
 ]
 
-OLD_TESTAMENT = [
+from app.data.psalms_data import PSALMS
+
+OLD_TESTAMENT_BASE = [
     ("Genesis", 50),
     ("Exodus", 40),
     ("Leviticus", 27),
     ("Numbers", 36),
     ("Deuteronomy", 34),
-    # Поки без Псалмів-алгоритму
 ]
+def build_psalms_blocks():
+    blocks = []
+    current_block = []
+    verse_sum = 0
+
+    for chapter, verses in PSALMS:
+        if verses > 80:
+            blocks.append(("Psalms", chapter))
+            continue
+
+        current_block.append(chapter)
+        verse_sum += verses
+
+        if verse_sum >= 80:
+            blocks.append(("Psalms", current_block.copy()))
+            current_block = []
+            verse_sum = 0
+
+    if current_block:
+        blocks.append(("Psalms", current_block.copy()))
+
+    return blocks
+
+
+def build_old_testament():
+    result = []
+
+    for book, chapters in OLD_TESTAMENT_BASE:
+        for ch in range(1, chapters + 1):
+            result.append((book, ch))
+
+    psalm_blocks = build_psalms_blocks()
+
+    for block in psalm_blocks:
+        result.append(block)
+
+    return result

@@ -1,5 +1,5 @@
 from app.core.database import get_pool
-from app.data.bible_structure import NEW_TESTAMENT, OLD_TESTAMENT
+from app.data.bible_structure import NEW_TESTAMENT, build_old_testament
 
 
 def flatten_structure(structure):
@@ -11,7 +11,7 @@ def flatten_structure(structure):
 
 
 NT_LIST = flatten_structure(NEW_TESTAMENT)
-OT_LIST = flatten_structure(OLD_TESTAMENT)
+OT_LIST = build_old_testament()
 
 
 async def create_or_update_plan(user_id: int, nt: int, ot: int):
