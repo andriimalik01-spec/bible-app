@@ -57,12 +57,25 @@ async def init_db():
             telegram_id BIGINT UNIQUE NOT NULL,
             name TEXT,
             language TEXT DEFAULT 'ua',
-            current_streak INTEGER DEFAULT 0,
-            max_streak INTEGER DEFAULT 0,
-            total_days INTEGER DEFAULT 0,
-            last_read_date DATE,
             created_at TIMESTAMP DEFAULT NOW()
         );
+        """)
+
+        # додаємо відсутні колонки, якщо їх нема
+        await conn.execute("""
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS current_streak INTEGER DEFAULT 0;
+        """)
+
+        await conn.execute("""
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS max_streak INTEGER DEFAULT 0;
+        """)
+
+        await conn.execute("""
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS total_days INTEGER DEFAULT 0;
+        """)
+
+        await conn.execute("""
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS last_read_date DATE;
         """)
 def get_pool():
     return pool
