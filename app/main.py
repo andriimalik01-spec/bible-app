@@ -15,6 +15,7 @@ import app.handlers.journal as journal
 from app.core.middleware import ErrorMiddleware
 import app.handlers.achievements as achievements
 import app.handlers.settings as settings
+import app.handlers.admin as admin
 
 
 
@@ -33,6 +34,7 @@ async def main():
     dp.include_router(journal.router)
     dp.include_router(achievements.router)
     dp.include_router(settings.router)
+    dp.include_router(admin.router)
     
     
     
