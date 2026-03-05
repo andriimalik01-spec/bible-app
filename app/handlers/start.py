@@ -8,6 +8,7 @@ from app.core.database import get_pool
 from app.services.streak import get_month_stats
 from app.services.rating import get_month_leaderboard
 from app.services.rating import get_user_rank
+from app.services.rating import create_month_snapshot
 
 from app.services.users import create_user_if_not_exists
 from app.services.reading_plan import (
@@ -198,3 +199,8 @@ async def rating_handler(message: Message):
     text += f"📖 Your days this month: {user_days}"
 
     await message.answer(text)
+    
+@router.message(Command("snapshot"))
+async def snapshot_handler(message: Message):
+    await create_month_snapshot()
+    await message.answer("Monthly snapshot created.")

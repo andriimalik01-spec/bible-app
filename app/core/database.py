@@ -81,3 +81,18 @@ async def init_db():
             UNIQUE(user_id, date)
         );
         """)
+        
+        # =========================
+        # MONTHLY RESULTS
+        # =========================
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS monthly_results (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            year INTEGER NOT NULL,
+            month INTEGER NOT NULL,
+            rank INTEGER NOT NULL,
+            days_count INTEGER NOT NULL,
+            UNIQUE(user_id, year, month)
+        );
+        """)
