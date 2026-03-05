@@ -31,8 +31,7 @@ async def show_journal(message: Message):
 
     for entry in entries:
         text += (
-            f"{entry['created_at'].date()} — "
-            f"{entry['book']} {entry['chapter']}\n"
+            f"📖 {entry['chapter']}\n"
             f"{entry['text']}\n\n"
         )
 
