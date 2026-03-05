@@ -7,6 +7,7 @@ from app.keyboards.reading_keyboard import get_reading_keyboard
 from app.core.database import get_pool
 from app.services.streak import get_month_stats
 from app.services.rating import get_month_leaderboard
+from app.services.rating import get_user_rank
 
 from app.services.users import create_user_if_not_exists
 from app.services.reading_plan import (
@@ -171,6 +172,11 @@ async def stats_handler(message: Message):
     
 @router.message(Command("rating"))
 async def rating_handler(message: Message):
+    db_user_id = await create_user_if_not_exists(
+        telegram_id=message.from_user.id,
+        name=message.from_user.full_name
+    )
+
     leaderboard = await get_month_leaderboard()
 
     if not leaderboard:
@@ -183,5 +189,12 @@ async def rating_handler(message: Message):
         name = row["name"] or "Anonymous"
         days = row["days_count"]
         text += f"{i}. {name} — {days} days\n"
+
+    # додаємо твою позицію
+    rank, user_days = await get_user_rank(db_user_id)
+
+    text += "\n"
+    text += f"📍 Your position: #{rank}\n"
+    text += f"📖 Your days this month: {user_days}"
 
     await message.answer(text)
