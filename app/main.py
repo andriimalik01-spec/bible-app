@@ -6,6 +6,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from app.core.scheduler import setup_scheduler
 
 from app.config import BOT_TOKEN
 from app.core.database import create_pool, init_db, close_pool
@@ -23,6 +24,7 @@ async def main():
 
     await create_pool()
     await init_db()
+    setup_scheduler()
 
     try:
         await dp.start_polling(bot)
