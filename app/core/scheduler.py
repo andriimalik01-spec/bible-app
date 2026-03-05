@@ -40,7 +40,3 @@ async def send_daily_inspiration():
             except:
                 pass
                 
-await conn.execute("""
-INSERT INTO daily_content (type, text, author, language)
-VALUES ('quote', 'Stay faithful in small things.', 'Test', 'ua')
-""")
