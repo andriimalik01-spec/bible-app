@@ -42,6 +42,9 @@ async def mark_as_read(user_id: int):
                 last_read_date = $4
             WHERE id = $5
         """, new_streak, new_max, new_total, today, user_id)
+        
+        from app.services.achievements import check_achievements
+        await check_achievements(user_id)
 
         return new_streak
 

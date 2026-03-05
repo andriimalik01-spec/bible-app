@@ -13,6 +13,8 @@ from app.core.database import create_pool, init_db, close_pool
 from app.handlers import start
 import app.handlers.journal as journal
 from app.core.middleware import ErrorMiddleware
+import app.handlers.achievements as achievements
+dp.include_router(achievements.router)
 
 
 
