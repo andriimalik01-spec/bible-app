@@ -16,6 +16,15 @@ from app.core.middleware import ErrorMiddleware
 import app.handlers.achievements as achievements
 import app.handlers.settings as settings
 import app.handlers.admin as admin
+from app.core.rate_limit import RateLimitMiddleware
+from app.core.health import start_health_server
+
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s"
+)
 
 
 
@@ -35,6 +44,8 @@ async def main():
     dp.include_router(achievements.router)
     dp.include_router(settings.router)
     dp.include_router(admin.router)
+    dp.message.middleware(RateLimitMiddleware(0.7))
+    dp.callback_query.middleware(RateLimitMiddleware(0.7))
     
     
     
@@ -42,6 +53,7 @@ async def main():
     await create_pool()
     await init_db()
     setup_scheduler()
+    await start_health_server()
 
     try:
         await dp.start_polling(bot)

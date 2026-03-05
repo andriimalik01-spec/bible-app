@@ -3,10 +3,11 @@ from aiogram.types import TelegramObject
 import traceback
 
 
+import logging
+
 class ErrorMiddleware(BaseMiddleware):
-    async def __call__(self, handler, event: TelegramObject, data):
+    async def __call__(self, handler, event, data):
         try:
             return await handler(event, data)
-        except Exception as e:
-            print("ERROR:", e)
-            traceback.print_exc()
+        except Exception:
+            logging.exception("Unhandled error")
