@@ -2,6 +2,8 @@ from aiogram import Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
+from app.services.streak import mark_as_read, get_streak
+from app.keyboards.reading_keyboard import get_reading_keyboard
 
 from app.services.users import create_user_if_not_exists
 from app.services.reading_plan import (
@@ -39,7 +41,7 @@ async def start_handler(message: Message):
     for book, ch in reading:
         text += f"{book} {ch}\n"
 
-    await message.answer(text)
+    await message.answer(text, reply_markup=get_reading_keyboard())
 
 
 @router.callback_query(lambda c: c.data.startswith("plan_"))
@@ -79,7 +81,7 @@ async def plan_callback(callback: CallbackQuery, state: FSMContext):
         else:
             text += f"{book} {ch}\n"
 
-    await callback.message.answer(text)
+    await callback.message.answer(text, reply_markup=get_reading_keyboard())
     await callback.answer()
 
 
@@ -120,4 +122,17 @@ async def choose_ot(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(text)
 
     await state.clear()
+    await callback.answer()
+    
+@router.callback_query(lambda c: c.data == "mark_read")
+async def mark_read_callback(callback: CallbackQuery):
+    db_user_id = await create_user_if_not_exists(
+        telegram_id=callback.from_user.id,
+        name=callback.from_user.full_name
+    )
+
+    await mark_as_read(db_user_id)
+    streak = await get_streak(db_user_id)
+
+    await callback.message.answer(f"🔥 Current streak: {streak} days")
     await callback.answer()

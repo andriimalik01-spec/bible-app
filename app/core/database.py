@@ -41,5 +41,14 @@ async def init_db():
             ot_index INTEGER DEFAULT 0
         );
         """)
+        
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS reading_logs (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            date DATE NOT NULL,
+            UNIQUE(user_id, date)
+        );
+        """)
 def get_pool():
     return pool
