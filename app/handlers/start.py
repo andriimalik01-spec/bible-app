@@ -6,6 +6,7 @@ from app.services.streak import mark_as_read, get_streak
 from app.keyboards.reading_keyboard import get_reading_keyboard
 from app.core.database import get_pool
 from app.services.streak import get_month_stats
+from app.services.rating import get_month_leaderboard
 
 from app.services.users import create_user_if_not_exists
 from app.services.reading_plan import (
@@ -164,5 +165,23 @@ async def stats_handler(message: Message):
         f"📅 This month: {month_count}/{days_in_month} days\n"
         f"📈 Completion: {percentage}%"
     )
+
+    await message.answer(text)
+    
+    
+@router.message(Command("rating"))
+async def rating_handler(message: Message):
+    leaderboard = await get_month_leaderboard()
+
+    if not leaderboard:
+        await message.answer("No data yet.")
+        return
+
+    text = "🏆 Monthly Leaderboard:\n\n"
+
+    for i, row in enumerate(leaderboard, start=1):
+        name = row["name"] or "Anonymous"
+        days = row["days_count"]
+        text += f"{i}. {name} — {days} days\n"
 
     await message.answer(text)
