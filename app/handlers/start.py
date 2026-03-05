@@ -213,10 +213,6 @@ async def rating_handler(message: Message):
 async def snapshot_handler(message: Message):
     await create_month_snapshot()
     await message.answer("Monthly snapshot created.")
-    
-@router.message(lambda m: m.text == "📖 Reading")
-async def menu_reading(message: Message):
-    await start_handler(message)
 
 
 @router.message(lambda m: m.text == "📓 Journal")
