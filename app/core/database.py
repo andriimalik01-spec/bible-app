@@ -19,8 +19,16 @@ async def close_pool():
         await pool.close()
 
 
+def get_pool():
+    return pool
+
+
 async def init_db():
     async with pool.acquire() as conn:
+
+        # =========================
+        # USERS TABLE
+        # =========================
         await conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -31,37 +39,7 @@ async def init_db():
         );
         """)
 
-        await conn.execute("""
-        CREATE TABLE IF NOT EXISTS reading_plans (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-            nt_per_day INTEGER NOT NULL,
-            ot_per_day INTEGER NOT NULL,
-            nt_index INTEGER DEFAULT 0,
-            ot_index INTEGER DEFAULT 0
-        );
-        """)
-        
-        await conn.execute("""
-        CREATE TABLE IF NOT EXISTS reading_logs (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-            date DATE NOT NULL,
-            UNIQUE(user_id, date)
-        );
-        """)
-        
-        await conn.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            telegram_id BIGINT UNIQUE NOT NULL,
-            name TEXT,
-            language TEXT DEFAULT 'ua',
-            created_at TIMESTAMP DEFAULT NOW()
-        );
-        """)
-
-        # додаємо відсутні колонки, якщо їх нема
+        # Safe migrations for users
         await conn.execute("""
         ALTER TABLE users ADD COLUMN IF NOT EXISTS current_streak INTEGER DEFAULT 0;
         """)
@@ -77,5 +55,29 @@ async def init_db():
         await conn.execute("""
         ALTER TABLE users ADD COLUMN IF NOT EXISTS last_read_date DATE;
         """)
-def get_pool():
-    return pool
+
+        # =========================
+        # READING PLANS
+        # =========================
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS reading_plans (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+            nt_per_day INTEGER NOT NULL,
+            ot_per_day INTEGER NOT NULL,
+            nt_index INTEGER DEFAULT 0,
+            ot_index INTEGER DEFAULT 0
+        );
+        """)
+
+        # =========================
+        # READING LOGS
+        # =========================
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS reading_logs (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            date DATE NOT NULL,
+            UNIQUE(user_id, date)
+        );
+        """)
