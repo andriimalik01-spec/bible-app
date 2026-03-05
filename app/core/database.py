@@ -96,3 +96,37 @@ async def init_db():
             UNIQUE(user_id, year, month)
         );
         """)
+        
+        # =========================
+        # JOURNAL
+        # =========================
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS journal_entries (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            book TEXT,
+            chapter TEXT,
+            text TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+        """)
+        
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS achievements (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            type TEXT NOT NULL,
+            achieved_at TIMESTAMP DEFAULT NOW(),
+            UNIQUE(user_id, type)
+        );
+        """)
+        
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS daily_content (
+            id SERIAL PRIMARY KEY,
+            type TEXT,
+            text TEXT,
+            author TEXT,
+            language TEXT DEFAULT 'ua'
+        );
+        """)

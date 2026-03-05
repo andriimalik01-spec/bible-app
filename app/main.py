@@ -11,6 +11,9 @@ from app.core.scheduler import setup_scheduler
 from app.config import BOT_TOKEN
 from app.core.database import create_pool, init_db, close_pool
 from app.handlers import start
+from app.handlers import journal
+from app.core.middleware import ErrorMiddleware
+
 
 
 async def main():
@@ -20,7 +23,15 @@ async def main():
     )
 
     dp = Dispatcher(storage=MemoryStorage())
+    
+    dp.message.middleware(ErrorMiddleware())
+    dp.callback_query.middleware(ErrorMiddleware())
+    
     dp.include_router(start.router)
+    dp.include_router(journal.router)
+    
+    
+    
 
     await create_pool()
     await init_db()
