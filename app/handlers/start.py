@@ -41,6 +41,8 @@ async def start_handler(message: Message):
         return
 
     reading = await get_today_reading(db_user_id)
+    from app.services.reading_plan import save_daily_reading
+    await save_daily_reading(db_user_id, reading)
 
     text = "Today:\n"
     for book, ch in reading:
@@ -75,6 +77,8 @@ async def plan_callback(callback: CallbackQuery, state: FSMContext):
         return
 
     reading = await get_today_reading(db_user_id)
+    from app.services.reading_plan import save_daily_reading
+    await save_daily_reading(db_user_id, reading)
 
     text = "Today:\n"
     for book, ch in reading:
@@ -117,8 +121,11 @@ async def choose_ot(callback: CallbackQuery, state: FSMContext):
     )
 
     await create_or_update_plan(db_user_id, nt_value, ot_value)
+    
 
     reading = await get_today_reading(db_user_id)
+    from app.services.reading_plan import save_daily_reading
+    await save_daily_reading(db_user_id, reading)
 
     text = "Today:\n"
     for book, ch in reading:

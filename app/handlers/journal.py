@@ -54,8 +54,6 @@ async def save_note(message: Message, state: FSMContext):
 
     await add_journal_entry(
         user_id=db_user_id,
-        book="Unknown",
-        chapter="Unknown",
         text=message.text
     )
 

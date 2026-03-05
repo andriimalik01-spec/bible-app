@@ -1,13 +1,25 @@
 from app.core.database import get_pool
 
 
-async def add_journal_entry(user_id: int, book: str, chapter: str, text: str):
+import datetime
+
+
+async def add_journal_entry(user_id: int, text: str):
     pool = get_pool()
+    today = datetime.date.today()
+
     async with pool.acquire() as conn:
+        reading = await conn.fetchrow("""
+            SELECT content FROM daily_readings
+            WHERE user_id = $1 AND date = $2
+        """, user_id, today)
+
+        reading_text = reading["content"] if reading else "No reading recorded"
+
         await conn.execute("""
             INSERT INTO journal_entries (user_id, book, chapter, text)
             VALUES ($1, $2, $3, $4)
-        """, user_id, book, chapter, text)
+        """, user_id, today.isoformat(), reading_text, text)
 
 
 async def get_user_entries(user_id: int, limit: int = 10):

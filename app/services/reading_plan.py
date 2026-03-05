@@ -60,3 +60,32 @@ async def get_user_plan(user_id: int):
             "SELECT * FROM reading_plans WHERE user_id = $1",
             user_id
         )
+        
+import datetime
+from app.core.database import get_pool
+
+
+async def save_daily_reading(user_id: int, reading_list):
+    pool = get_pool()
+    today = datetime.date.today()
+
+    text_parts = []
+
+    for book, ch in reading_list:
+        if isinstance(ch, list):
+            if len(ch) == 1:
+                text_parts.append(f"{book} {ch[0]}")
+            else:
+                text_parts.append(f"{book} {ch[0]}–{ch[-1]}")
+        else:
+            text_parts.append(f"{book} {ch}")
+
+    content = "; ".join(text_parts)
+
+    async with pool.acquire() as conn:
+        await conn.execute("""
+            INSERT INTO daily_readings (user_id, date, content)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (user_id, date)
+            DO UPDATE SET content = EXCLUDED.content
+        """, user_id, today, content)

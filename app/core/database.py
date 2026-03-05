@@ -130,3 +130,16 @@ async def init_db():
             language TEXT DEFAULT 'ua'
         );
         """)
+        
+        # =========================
+        # DAILY READINGS
+        # =========================
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS daily_readings (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            date DATE NOT NULL,
+            content TEXT NOT NULL,
+            UNIQUE(user_id, date)
+        );
+        """)
