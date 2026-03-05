@@ -1,10 +1,9 @@
-async def advance_reading(user_id: int):
-    pool = get_pool()
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-    async with pool.acquire() as conn:
-        await conn.execute("""
-            UPDATE reading_plans
-            SET nt_index = nt_index + nt_per_day,
-                ot_index = ot_index + ot_per_day
-            WHERE user_id = $1
-        """, user_id)
+
+def get_reading_menu():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📖 What to read today", callback_data="reading_today")],
+        [InlineKeyboardButton(text="✅ I read today", callback_data="reading_done")],
+        [InlineKeyboardButton(text="📝 Write note", callback_data="reading_note")],
+    ])
