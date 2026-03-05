@@ -11,7 +11,7 @@ from app.core.scheduler import setup_scheduler
 from app.config import BOT_TOKEN
 from app.core.database import create_pool, init_db, close_pool
 from app.handlers import start
-from app.handlers import journal
+import app.handlers.journal as journal
 from app.core.middleware import ErrorMiddleware
 
 
