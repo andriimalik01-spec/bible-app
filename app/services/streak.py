@@ -55,3 +55,26 @@ async def get_streak(user_id: int):
         """, user_id)
 
     return user["current_streak"] if user else 0
+    
+import datetime
+from calendar import monthrange
+
+
+async def get_month_stats(user_id: int):
+    pool = get_pool()
+    today = datetime.date.today()
+
+    first_day = today.replace(day=1)
+    last_day = today.replace(day=monthrange(today.year, today.month)[1])
+
+    async with pool.acquire() as conn:
+        count = await conn.fetchval("""
+            SELECT COUNT(*) FROM reading_logs
+            WHERE user_id = $1
+            AND date BETWEEN $2 AND $3
+        """, user_id, first_day, last_day)
+
+    days_in_month = monthrange(today.year, today.month)[1]
+    percentage = int((count / days_in_month) * 100)
+
+    return count, days_in_month, percentage

@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from app.services.streak import mark_as_read, get_streak
 from app.keyboards.reading_keyboard import get_reading_keyboard
 from app.core.database import get_pool
+from app.services.streak import get_month_stats
 
 from app.services.users import create_user_if_not_exists
 from app.services.reading_plan import (
@@ -153,11 +154,15 @@ async def stats_handler(message: Message):
             WHERE id = $1
         """, db_user_id)
 
+    month_count, days_in_month, percentage = await get_month_stats(db_user_id)
+
     text = (
         f"📊 Your Statistics:\n\n"
         f"🔥 Current streak: {user['current_streak']} days\n"
         f"🏆 Max streak: {user['max_streak']} days\n"
-        f"📖 Total reading days: {user['total_days']}"
+        f"📖 Total reading days: {user['total_days']}\n\n"
+        f"📅 This month: {month_count}/{days_in_month} days\n"
+        f"📈 Completion: {percentage}%"
     )
 
     await message.answer(text)
