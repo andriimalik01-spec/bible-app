@@ -2,6 +2,10 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 
 from app.config import BOT_TOKEN
 from app.core.database import create_pool, init_db, close_pool
@@ -14,7 +18,7 @@ async def main():
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
 
-    dp = Dispatcher()
+    dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(start.router)
 
     await create_pool()

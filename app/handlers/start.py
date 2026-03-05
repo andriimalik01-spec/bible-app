@@ -1,6 +1,7 @@
 from aiogram import Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
 
 from app.services.users import create_user_if_not_exists
 from app.services.reading_plan import (
@@ -8,7 +9,10 @@ from app.services.reading_plan import (
     get_today_reading,
     get_user_plan
 )
+
 from app.keyboards.plan_keyboard import get_plan_keyboard
+from app.keyboards.custom_plan_keyboard import get_number_keyboard
+from app.states.plan_states import CustomPlan
 
 router = Router()
 
@@ -38,8 +42,8 @@ async def start_handler(message: Message):
     await message.answer(text)
 
 
-@router.callback_query()
-async def plan_callback(callback: CallbackQuery):
+@router.callback_query(lambda c: c.data.startswith("plan_"))
+async def plan_callback(callback: CallbackQuery, state: FSMContext):
     db_user_id = await create_user_if_not_exists(
         telegram_id=callback.from_user.id,
         name=callback.from_user.full_name
@@ -55,7 +59,11 @@ async def plan_callback(callback: CallbackQuery):
         await create_or_update_plan(db_user_id, 2, 2)
 
     elif callback.data == "plan_custom":
-        await callback.message.answer("Custom plan coming soon.")
+        await state.set_state(CustomPlan.choosing_nt)
+        await callback.message.answer(
+            "Choose number of NT chapters per day:",
+            reply_markup=get_number_keyboard("nt")
+        )
         await callback.answer()
         return
 
@@ -66,4 +74,44 @@ async def plan_callback(callback: CallbackQuery):
         text += f"{book} {ch}\n"
 
     await callback.message.answer(text)
+    await callback.answer()
+
+
+@router.callback_query(lambda c: c.data.startswith("nt_"))
+async def choose_nt(callback: CallbackQuery, state: FSMContext):
+    nt_value = int(callback.data.split("_")[1])
+
+    await state.update_data(nt=nt_value)
+    await state.set_state(CustomPlan.choosing_ot)
+
+    await callback.message.answer(
+        "Choose number of OT chapters per day:",
+        reply_markup=get_number_keyboard("ot")
+    )
+    await callback.answer()
+
+
+@router.callback_query(lambda c: c.data.startswith("ot_"))
+async def choose_ot(callback: CallbackQuery, state: FSMContext):
+    ot_value = int(callback.data.split("_")[1])
+
+    data = await state.get_data()
+    nt_value = data.get("nt", 0)
+
+    db_user_id = await create_user_if_not_exists(
+        telegram_id=callback.from_user.id,
+        name=callback.from_user.full_name
+    )
+
+    await create_or_update_plan(db_user_id, nt_value, ot_value)
+
+    reading = await get_today_reading(db_user_id)
+
+    text = "Today:\n"
+    for book, ch in reading:
+        text += f"{book} {ch}\n"
+
+    await callback.message.answer(text)
+
+    await state.clear()
     await callback.answer()
