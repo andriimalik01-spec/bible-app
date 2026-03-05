@@ -71,7 +71,13 @@ async def plan_callback(callback: CallbackQuery, state: FSMContext):
 
     text = "Today:\n"
     for book, ch in reading:
-        text += f"{book} {ch}\n"
+        if isinstance(ch, list):
+            if len(ch) == 1:
+                text += f"{book} {ch[0]}\n"
+            else:
+                text += f"{book} {ch[0]}–{ch[-1]}\n"
+        else:
+            text += f"{book} {ch}\n"
 
     await callback.message.answer(text)
     await callback.answer()
