@@ -53,3 +53,10 @@ async def get_today_reading(user_id: int):
         """, nt_per_day, ot_per_day, user_id)
 
         return nt_today + ot_today
+async def get_user_plan(user_id: int):
+    pool = get_pool()
+    async with pool.acquire() as conn:
+        return await conn.fetchrow(
+            "SELECT * FROM reading_plans WHERE user_id = $1",
+            user_id
+        )
