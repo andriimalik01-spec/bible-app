@@ -2,7 +2,7 @@ import os
 
 BOT_TOKEN = os.getenv("TOKEN")
 DATABASE_URL = os.getenv("DATABASE_URL")
-ADMIN_ID = int(os.getenv("ADMIN_ID", "691093703")
+ADMIN_ID = int(os.getenv("ADMIN_ID", "691093703"))
 
 if not BOT_TOKEN:
     raise ValueError("TOKEN is not set")
