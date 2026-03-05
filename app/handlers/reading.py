@@ -10,7 +10,10 @@ router = Router()
 
 @router.message(lambda m: m.text == "📖 Reading")
 async def reading_menu(message: Message):
-    await message.answer("📖 Reading Menu:", reply_markup=get_reading_menu())
+    await message.answer(
+        "📖 Reading Menu:",
+        reply_markup=get_reading_menu()
+    )
 
 
 @router.callback_query(lambda c: c.data == "reading_today")
