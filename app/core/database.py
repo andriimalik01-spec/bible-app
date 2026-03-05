@@ -41,3 +41,5 @@ async def init_db():
             current_index INTEGER DEFAULT 0
         );
         """)
+def get_pool():
+    return pool
