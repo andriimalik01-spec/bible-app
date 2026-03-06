@@ -26,7 +26,7 @@ def setup_scheduler():
     
     scheduler.add_job(
         send_evening_reminder,
-        CronTrigger(hour=2, minute=0)
+        CronTrigger(hour=21, minute=0)
     )
 
     scheduler.start()
@@ -72,7 +72,7 @@ async def send_daily_inspiration():
                 pass
                 
                 
-from app.services.reading_plan import needs_evening_reminder
+from app.services.reading_plan import get_backlog
 
 
 async def send_evening_reminder():
