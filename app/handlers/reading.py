@@ -33,11 +33,25 @@ async def show_today(callback: CallbackQuery):
         name=callback.from_user.full_name
     )
 
+    today = datetime.date.today()
+    pool = get_pool()
+
+    async with pool.acquire() as conn:
+        existing = await conn.fetchrow("""
+            SELECT content FROM daily_readings
+            WHERE user_id = $1 AND date = $2
+        """, db_user_id, today)
+
+    if existing:
+        text = f"📖 Today:\n\n{existing['content']}"
+        await callback.message.answer(text)
+        await callback.answer()
+        return
+
+    # якщо ще не було згенеровано
     reading = await peek_today_reading(db_user_id)
 
-    if not reading:
-        await callback.message.answer("No plan found.")
-        return
+    await save_daily_reading(db_user_id, reading)
 
     text = "📖 Today:\n\n"
 
