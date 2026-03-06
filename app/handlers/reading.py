@@ -89,6 +89,9 @@ async def write_note(callback: CallbackQuery):
     await callback.message.answer("Use /note to write your journal entry.")
     await callback.answer()
     
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+import datetime
+
 @router.callback_query(lambda c: c.data == "reading_backlog")
 async def show_backlog(callback: CallbackQuery):
     db_user_id = await create_user_if_not_exists(
@@ -100,12 +103,43 @@ async def show_backlog(callback: CallbackQuery):
 
     if not backlog:
         await callback.message.answer("Немає пропущених днів 🙌")
+        await callback.answer()
         return
 
-    text = "📚 Пропущені дні:\n\n"
-
     for row in backlog:
-        text += f"📅 {row['date']} — {row['content']}\n"
+        date_str = row["date"].isoformat()
+        text = f"📅 {row['date']} — {row['content']}"
 
-    await callback.message.answer(text)
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="✅ Закрити",
+                    callback_data=f"close_backlog_{date_str}"
+                )
+            ]
+        ])
+
+        await callback.message.answer(text, reply_markup=keyboard)
+
+    await callback.answer()
+    
+@router.callback_query(lambda c: c.data.startswith("close_backlog_"))
+async def close_backlog(callback: CallbackQuery):
+    db_user_id = await create_user_if_not_exists(
+        telegram_id=callback.from_user.id,
+        name=callback.from_user.full_name
+    )
+
+    date_str = callback.data.replace("close_backlog_", "")
+    date_obj = datetime.date.fromisoformat(date_str)
+
+    pool = get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("""
+            UPDATE daily_readings
+            SET completed = TRUE
+            WHERE user_id = $1 AND date = $2
+        """, db_user_id, date_obj)
+
+    await callback.message.edit_text("✅ День закрито")
     await callback.answer()
