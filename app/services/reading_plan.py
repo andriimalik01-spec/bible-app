@@ -136,3 +136,23 @@ async def get_backlog(user_id: int):
             AND date < $2
             ORDER BY date ASC
         """, user_id, today)
+        
+import datetime
+from app.core.database import get_pool
+
+
+async def needs_evening_reminder(user_id: int):
+    pool = get_pool()
+    today = datetime.date.today()
+
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("""
+            SELECT completed
+            FROM daily_readings
+            WHERE user_id = $1 AND date = $2
+        """, user_id, today)
+
+    if not row:
+        return False
+
+    return row["completed"] is False
