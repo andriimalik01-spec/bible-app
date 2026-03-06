@@ -23,8 +23,14 @@ def setup_scheduler():
         send_daily_inspiration,
         CronTrigger(hour=8, minute=0)
     )
+    
+    scheduler.add_job(
+        send_evening_reminder,
+        CronTrigger(hour=21, minute=0)
+    )
 
     scheduler.start()
+    
 
 
 async def send_daily_inspiration():
@@ -59,6 +65,30 @@ async def send_daily_inspiration():
 
             if content["author"]:
                 text += f"\n\n— {content['author']}"
+
+            try:
+                await bot.send_message(telegram_id, text)
+            except:
+                pass
+                
+                
+from app.services.reading_plan import needs_evening_reminder
+
+
+async def send_evening_reminder():
+    bot = Bot(token=BOT_TOKEN)
+    users = await get_all_users()
+
+    for user in users:
+        user_id = user["id"]
+        telegram_id = user["telegram_id"]
+
+        if await needs_evening_reminder(user_id):
+            text = (
+                "🌙 День добігає кінця.\n\n"
+                "Не забудь сьогоднішнє читання 🙏\n"
+                "Можливо це займе лише 5–10 хвилин."
+            )
 
             try:
                 await bot.send_message(telegram_id, text)

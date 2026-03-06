@@ -157,3 +157,19 @@ async def close_backlog(callback: CallbackQuery):
 
     await callback.message.edit_text("✅ День закрито")
     await callback.answer()
+    
+async def needs_evening_reminder(user_id: int):
+    pool = get_pool()
+    today = datetime.date.today()
+
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("""
+            SELECT completed
+            FROM daily_readings
+            WHERE user_id = $1 AND date = $2
+        """, user_id, today)
+
+    if not row:
+        return False  # ще навіть не відкривав читання
+
+    return row["completed"] is False
