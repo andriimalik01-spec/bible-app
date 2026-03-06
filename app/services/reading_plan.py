@@ -122,3 +122,17 @@ async def advance_reading(user_id: int):
                 ot_index = ot_index + ot_per_day
             WHERE user_id = $1
         """, user_id)
+        
+async def get_backlog(user_id: int):
+    pool = get_pool()
+    today = datetime.date.today()
+
+    async with pool.acquire() as conn:
+        return await conn.fetch("""
+            SELECT date, content
+            FROM daily_readings
+            WHERE user_id = $1
+            AND completed = FALSE
+            AND date < $2
+            ORDER BY date ASC
+        """, user_id, today)

@@ -143,3 +143,8 @@ async def init_db():
             UNIQUE(user_id, date)
         );
         """)
+        
+        await conn.execute("""
+        ALTER TABLE daily_readings
+        ADD COLUMN IF NOT EXISTS completed BOOLEAN DEFAULT FALSE;
+        """)
