@@ -5,6 +5,8 @@ from app.services.users import create_user_if_not_exists
 from app.services.reading_plan import peek_today_reading, advance_reading, save_daily_reading,get_backlog
 from app.services.streak import mark_as_read
 from app.keyboards.reading_menu import get_reading_menu
+from app.texts.loader import get_texts
+from app.core.database import get_pool
   
 
 router = Router()
@@ -17,11 +19,21 @@ async def reading_menu(message: Message):
         name=message.from_user.full_name
     )
 
+    # 🔹 Отримуємо мову користувача
+    pool = get_pool()
+    async with pool.acquire() as conn:
+        user = await conn.fetchrow("""
+            SELECT language FROM users WHERE id = $1
+        """, db_user_id)
+
+    user_language = user["language"]
+    texts = get_texts(user_language)  # ← ОСЬ ТУТ
+
     backlog = await get_backlog(db_user_id)
     backlog_count = len(backlog)
 
     await message.answer(
-        "📖 Reading Menu:",
+        texts.reading_menu_title,
         reply_markup=get_reading_menu(backlog_count)
     )
 
