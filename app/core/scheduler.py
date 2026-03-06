@@ -21,12 +21,12 @@ def setup_scheduler():
     # 🌅 Щоденне натхнення о 08:00
     scheduler.add_job(
         send_daily_inspiration,
-        CronTrigger(hour=8, minute=0)
+        CronTrigger(hour=2, minute=12)
     )
     
     scheduler.add_job(
         send_evening_reminder,
-        CronTrigger(hour=2, minute=10)
+        CronTrigger(hour=21, minute=0)
     )
 
     scheduler.start()
