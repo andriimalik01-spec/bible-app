@@ -26,7 +26,7 @@ def setup_scheduler():
     
     scheduler.add_job(
         send_evening_reminder,
-        CronTrigger(hour=21, minute=0)
+        CronTrigger(hour=2, minute=10)
     )
 
     scheduler.start()
